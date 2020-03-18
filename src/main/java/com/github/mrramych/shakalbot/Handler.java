@@ -1,9 +1,9 @@
 package com.github.mrramych.shakalbot;
 
+
 import com.amazonaws.services.lambda.runtime.Context;
-import com.github.mrramych.json.Json;
-import com.github.mrramych.json.JsonCastException;
-import com.github.mrramych.json.types.JsonObject;
+import moe.orangelabs.json.JsonObject;
+import moe.orangelabs.json.exceptions.JsonCastException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,11 +11,10 @@ import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Scanner;
 
-import static com.github.mrramych.json.Json.parse;
-import static com.github.mrramych.json.Json.string;
 import static com.github.mrramych.shakalbot.Utils.configureLogging;
 import static com.github.mrramych.shakalbot.Utils.response;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static moe.orangelabs.json.Json.*;
 
 public class Handler {
 
@@ -53,7 +52,7 @@ public class Handler {
 
 
         if (input.containsKey("Records")) {
-            LOGGER.info("Updating history {}", Json.object("mode", "update"));
+            LOGGER.info("Updating history {}", object("mode", "update"));
 
             var body = input.get("Records").getAsArray().get(0).getAsObject().getString("body").string;
             var message = parse(body).getAsObject();
@@ -68,7 +67,7 @@ public class Handler {
 
             response(outputStream, HTTP_OK, string("ok"));
         } else if (input.containsKey("path")) {
-            LOGGER.info("Sending to Sqs {}", Json.object("mode", "get"));
+            LOGGER.info("Sending to Sqs {}", object("mode", "get"));
 
             try {
                 new Sqs().sendToSqs(input.get("body"));
@@ -78,15 +77,14 @@ public class Handler {
             }
             response(outputStream, HTTP_OK, string("ok"));
         } else {
-            LOGGER.info("Subscribing {}", Json.object("mode", "subscribe"));
+            LOGGER.info("Subscribing {}", object("mode", "subscribe"));
 
             var newHistoryId = new Gmail().subscribe("projects/copper-oven-262406/topics/shakalTopic");
 
             try {
                 new Vk().updateHistory(newHistoryId);
-            } catch (Vk.VkSendMessageException e) {
-                LOGGER.warn("Can not send message");
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                LOGGER.warn("Can not send message ", e);
             }
 
             response(outputStream, HTTP_OK, string("ok"));

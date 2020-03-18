@@ -1,19 +1,18 @@
 package com.github.mrramych.shakalbot;
 
-import com.github.mrramych.json.Json;
-import com.github.mrramych.json.types.JsonObject;
+
+import moe.orangelabs.json.Json;
+import moe.orangelabs.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Base64;
 
-import static com.github.mrramych.json.Json.*;
-import static com.github.mrramych.shakalbot.Utils.response;
-import static java.net.HttpURLConnection.HTTP_OK;
+import static moe.orangelabs.json.Json.parse;
+
 
 public class Sqs {
 
@@ -27,7 +26,7 @@ public class Sqs {
 
     public void sendToSqs(Json json) throws IOException {
         if (!json.isString()) {
-            LOGGER.warn("Expected body to be string, but received {}", json.getType());
+            LOGGER.warn("Expected body to be string, but received '{}'", json);
             throw new IllegalArgumentException();
         }
 

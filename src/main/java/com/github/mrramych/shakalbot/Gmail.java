@@ -82,16 +82,18 @@ public class Gmail {
             if (history.getMessagesAdded() != null) {
                 history.getMessagesAdded().forEach(historyMessageAdded -> {
                     try {
-                        if (historyMessageAdded.getMessage().getLabelIds().contains("INBOX")) {
-                            builder.append("New incoming message:\n");
-                        } else if (historyMessageAdded.getMessage().getLabelIds().contains("SPAM")) {
-                            builder.append("New message in spam:\n");
-                        } else if (historyMessageAdded.getMessage().getLabelIds().contains("SENT")) {
-                            builder.append("New message sent:\n");
-                        } else {
-                            builder.append("New message detected somewhere:\n");
+                        if (historyMessageAdded.getMessage().getLabelIds() != null) {
+                            if (historyMessageAdded.getMessage().getLabelIds().contains("INBOX")) {
+                                builder.append("New incoming message:\n");
+                            } else if (historyMessageAdded.getMessage().getLabelIds().contains("SPAM")) {
+                                builder.append("New message in spam:\n");
+                            } else if (historyMessageAdded.getMessage().getLabelIds().contains("SENT")) {
+                                builder.append("New message sent:\n");
+                            } else {
+                                builder.append("New message detected somewhere:\n");
+                            }
+                            writeInfoAboutMessage(builder, historyMessageAdded.getMessage().getId());
                         }
-                        writeInfoAboutMessage(builder, historyMessageAdded.getMessage().getId());
                     } catch (IOException e) {
                         LOGGER.warn("Can get message info", e);
                     }

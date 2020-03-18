@@ -1,6 +1,5 @@
 package com.github.mrramych.shakalbot;
 
-import com.github.mrramych.json.Json;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
@@ -8,6 +7,7 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import moe.orangelabs.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -17,8 +17,8 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static com.github.mrramych.json.Json.object;
-import static com.github.mrramych.json.Json.string;
+import static moe.orangelabs.json.Json.object;
+import static moe.orangelabs.json.Json.string;
 
 public class Utils {
 
