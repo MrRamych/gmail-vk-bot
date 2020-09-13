@@ -42,7 +42,6 @@ public class Gmail {
     }
 
     public void unsubscribe() throws IOException {
-        LOGGER.info("Unsubscribing");
         gmail.users().stop("me").execute();
     }
 
@@ -54,8 +53,8 @@ public class Gmail {
 
 
         if (response.getHistory() == null) {
-            LOGGER.warn("Got null");
-            return null;
+            LOGGER.info("Gmail returned no history");
+            return new Message(List.of(), response.getHistoryId());
         }
 
 
@@ -90,7 +89,9 @@ public class Gmail {
                             } else if (historyMessageAdded.getMessage().getLabelIds().contains("SENT")) {
                                 builder.append("New message sent:\n");
                             } else {
-                                builder.append("New message detected somewhere:\n");
+                                builder.append("New message in ");
+                                historyMessageAdded.getMessage().getLabelIds().forEach(s -> builder.append(s).append(" "));
+                                builder.append(":\n");
                             }
                             writeInfoAboutMessage(builder, historyMessageAdded.getMessage().getId());
                         }
@@ -111,6 +112,7 @@ public class Gmail {
 
         return new Message(messages, response.getHistoryId());
     }
+
 
     private void writeInfoAboutMessage(StringBuilder builder, String messageId) throws IOException {
         var messageInfo = gmail.users().messages().get("me", messageId)

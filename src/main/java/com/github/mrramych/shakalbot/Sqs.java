@@ -26,7 +26,7 @@ public class Sqs {
 
     public void sendToSqs(Json json) throws IOException {
         if (!json.isString()) {
-            LOGGER.warn("Expected body to be string, but received '{}'", json);
+            LOGGER.warn("Expected body to be string, but received: '{}'", json);
             throw new IllegalArgumentException();
         }
 
@@ -35,7 +35,6 @@ public class Sqs {
         JsonObject message = parse(new String(
                 Base64.getDecoder().decode(input.getObject("message").getString("data").string)
         )).getAsObject();
-
 
         LOGGER.info("Your SQS message is: {}", message.toString());
 

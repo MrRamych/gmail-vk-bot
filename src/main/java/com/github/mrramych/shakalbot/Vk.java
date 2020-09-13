@@ -45,6 +45,8 @@ public class Vk {
 
     private void sendMessage(String message) throws VkSendMessageException {
         try {
+            LOGGER.info("Sending message {}", message.replace('\n', '\r'));
+
             String request = "https://api.vk.com/method/messages.send" +
                     "?access_token=" + getAndCheckVariable("vk_token") +
                     "&v=5.103" +

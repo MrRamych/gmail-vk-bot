@@ -11,14 +11,18 @@ import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Scanner;
 
-import static com.github.mrramych.shakalbot.Utils.configureLogging;
-import static com.github.mrramych.shakalbot.Utils.response;
+import static com.github.mrramych.shakalbot.Utils.*;
 import static java.net.HttpURLConnection.HTTP_OK;
-import static moe.orangelabs.json.Json.*;
+import static moe.orangelabs.json.Json.parse;
+import static moe.orangelabs.json.Json.string;
 
 public class Handler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
+    private static final Logger LOGGER;
+
+    static {
+        LOGGER = LoggerFactory.getLogger(Handler.class);
+    }
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
         System.out.println("Waiting for input");
@@ -30,13 +34,15 @@ public class Handler {
     }
 
     public void handle(InputStream inputStream, OutputStream outputStream, Context context) throws IOException, GeneralSecurityException {
-        LOGGER.info("Start");
+        System.setProperty("line.separator", "\r");
+
         configureLogging();
 
         String in = new String(inputStream.readAllBytes());
         LOGGER.info("Input: " + in);
 
-        if (in.equals("unsubscribe")) {
+        if (in.equals("{\"unsubscribe\"")) {
+            LOGGER.info("Unsubscribing");
             new Gmail().unsubscribe();
             return;
         }
@@ -52,7 +58,7 @@ public class Handler {
 
 
         if (input.containsKey("Records")) {
-            LOGGER.info("Updating history {}", object("mode", "update"));
+            LOGGER.info("Updating history");
 
             var body = input.get("Records").getAsArray().get(0).getAsObject().getString("body").string;
             var message = parse(body).getAsObject();
@@ -61,27 +67,26 @@ public class Handler {
             try {
                 new Vk().updateHistory(newHistoryId.toBigInteger());
             } catch (Vk.VkSendMessageException e) {
-                LOGGER.warn("Can not send message");
-                throw new RuntimeException(e);
+                LOGGER.warn("Can not send message", e);
             }
 
             response(outputStream, HTTP_OK, string("ok"));
         } else if (input.containsKey("path")) {
-            LOGGER.info("Sending to Sqs {}", object("mode", "get"));
+            LOGGER.info("Sending message to Sqs");
 
             try {
                 new Sqs().sendToSqs(input.get("body"));
             } catch (Exception e) {
-                LOGGER.warn("Can not send message to SQS");
-                throw e;
+                LOGGER.warn("Can not send message to SQS", e);
             }
+
             response(outputStream, HTTP_OK, string("ok"));
         } else {
-            LOGGER.info("Subscribing {}", object("mode", "subscribe"));
-
-            var newHistoryId = new Gmail().subscribe("projects/copper-oven-262406/topics/shakalTopic");
+            LOGGER.info("Subscribing");
 
             try {
+                var newHistoryId = new Gmail().subscribe(getAndCheckVariable("google_topic"));
+
                 new Vk().updateHistory(newHistoryId);
             } catch (Exception e) {
                 LOGGER.warn("Can not send message ", e);
