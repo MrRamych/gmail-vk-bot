@@ -43,7 +43,7 @@ public class Vk {
         db.putIntValue("key", "previousHistoryId", "value", newHistoryId.toString());
     }
 
-    private void sendMessage(String message) throws VkSendMessageException {
+    public void sendMessage(String message) throws VkSendMessageException {
         try {
             LOGGER.info("Sending message {}", message.replace('\n', '\r'));
 

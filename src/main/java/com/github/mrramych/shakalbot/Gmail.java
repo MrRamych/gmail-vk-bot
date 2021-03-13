@@ -68,7 +68,7 @@ public class Gmail {
                 history.getLabelsAdded().forEach(historyLabelAdded -> {
                     if (historyLabelAdded.getLabelIds().contains("TRASH")) {
                         try {
-                            builder.append("Message deleted:\n");
+                            builder.append("Сообщение удалено:\n");
                             writeInfoAboutMessage(builder, historyLabelAdded.getMessage().getId());
                         } catch (IOException e) {
                             LOGGER.warn("Can not get info about message", e);
@@ -83,15 +83,11 @@ public class Gmail {
                     try {
                         if (historyMessageAdded.getMessage().getLabelIds() != null) {
                             if (historyMessageAdded.getMessage().getLabelIds().contains("INBOX")) {
-                                builder.append("New incoming message:\n");
+                                builder.append("Новое входящее сообщение:\n");
                             } else if (historyMessageAdded.getMessage().getLabelIds().contains("SPAM")) {
-                                builder.append("New message in spam:\n");
+                                builder.append("Новое сообщение в спаме:\n");
                             } else if (historyMessageAdded.getMessage().getLabelIds().contains("SENT")) {
-                                builder.append("New message sent:\n");
-                            } else {
-                                builder.append("New message in ");
-                                historyMessageAdded.getMessage().getLabelIds().forEach(s -> builder.append(s).append(" "));
-                                builder.append(":\n");
+                                builder.append("Отправлено сообщение:\n");
                             }
                             writeInfoAboutMessage(builder, historyMessageAdded.getMessage().getId());
                         }
@@ -122,17 +118,17 @@ public class Gmail {
                 .filter(messagePartHeader -> messagePartHeader.getName().equals("From"))
                 .findFirst()
                 .map(MessagePartHeader::getValue)
-                .orElseGet(() -> "UNKNOWN");
+                .orElseGet(() -> "НЕИЗВЕСТНО");
 
         String subject = messageInfo.getPayload().getHeaders().stream()
                 .filter(messagePartHeader -> messagePartHeader.getName().equals("Subject"))
                 .findFirst()
                 .map(MessagePartHeader::getValue)
-                .orElseGet(() -> "NO SUBJECT");
+                .orElseGet(() -> "НЕТ ТЕМЫ");
 
         builder
-                .append("From: ").append(from).append('\n')
-                .append("Subject: ").append(subject).append('\n')
+                .append("От: ").append(from).append('\n')
+                .append("Тема: ").append(subject).append('\n')
                 .append("Snippet: ").append(messageInfo.getSnippet()).append("\n\n");
 
     }

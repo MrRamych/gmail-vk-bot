@@ -41,59 +41,51 @@ public class Handler {
         String in = new String(inputStream.readAllBytes());
         LOGGER.info("Input: " + in);
 
-        if (in.equals("{\"unsubscribe\"")) {
-            LOGGER.info("Unsubscribing");
-            new Gmail().unsubscribe();
-            return;
-        }
-
         JsonObject input;
         try {
             input = parse(in).getAsObject();
-        } catch (JsonCastException e) {
-            LOGGER.warn("Can not parse message", e);
-            response(outputStream, HTTP_OK, string("ok"));
-            return;
-        }
 
+            if (input.containsKey("Records")) {
+                LOGGER.info("Updating history");
 
-        if (input.containsKey("Records")) {
-            LOGGER.info("Updating history");
+                var body = input.get("Records").getAsArray().get(0).getAsObject().getString("body").string;
+                var message = parse(body).getAsObject();
+                var newHistoryId = message.getNumber("historyId").value;
 
-            var body = input.get("Records").getAsArray().get(0).getAsObject().getString("body").string;
-            var message = parse(body).getAsObject();
-            var newHistoryId = message.getNumber("historyId").value;
-
-            try {
                 new Vk().updateHistory(newHistoryId.toBigInteger());
-            } catch (Vk.VkSendMessageException e) {
-                LOGGER.warn("Can not send message", e);
-            }
 
-            response(outputStream, HTTP_OK, string("ok"));
-        } else if (input.containsKey("path")) {
-            LOGGER.info("Sending message to Sqs");
+            } else if (input.containsKey("path")) {
+                LOGGER.info("Sending message to Sqs");
 
-            try {
                 new Sqs().sendToSqs(input.get("body"));
-            } catch (Exception e) {
-                LOGGER.warn("Can not send message to SQS", e);
-            }
 
-            response(outputStream, HTTP_OK, string("ok"));
-        } else {
-            LOGGER.info("Subscribing");
+            } else if (input.containsKey("action")) {
+                switch (input.getString("action").string) {
+                    case "unsubscribe":
+                        LOGGER.info("Unsubscribing");
+                        new Gmail().unsubscribe();
+                        return;
+                    case "ping":
+                        LOGGER.info("Sending test message");
+                        new Vk().sendMessage("это ping");
+                        return;
+                    default:
+                        LOGGER.warn("Doing nothing");
+                }
 
-            try {
+            } else {
+                LOGGER.info("Subscribing");
+
                 var newHistoryId = new Gmail().subscribe(getAndCheckVariable("google_topic"));
 
                 new Vk().updateHistory(newHistoryId);
-            } catch (Exception e) {
-                LOGGER.warn("Can not send message ", e);
-            }
 
-            response(outputStream, HTTP_OK, string("ok"));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error", e);
         }
+
+        response(outputStream, HTTP_OK, string("ok"));
     }
 
 }

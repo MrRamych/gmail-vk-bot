@@ -7,7 +7,14 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url 'http://maven.orangelabs.moe/'
+        url "https://maven.orangelabs.moe"
+        credentials {
+            username project.property('build.aws_access_key_id')
+            password project.property('build.aws_secret_access_key')
+        }
+        authentication {
+            basic(BasicAuthentication)
+        }
     }
 }
 
@@ -24,7 +31,7 @@ dependencies {
     compile 'com.amazonaws:aws-lambda-java-core:1.2.1'
     compile group: 'software.amazon.awssdk', name: 'sqs', version: '2.14.16'
     compile group: 'software.amazon.awssdk', name: 'dynamodb', version: '2.14.16'
-    
+
     compile 'com.google.auth:google-auth-library-oauth2-http:0.21.1'
     compile 'com.google.cloud:google-cloud-pubsub:1.108.1'
     compile 'com.google.apis:google-api-services-gmail:v1-rev20200824-1.30.10'
