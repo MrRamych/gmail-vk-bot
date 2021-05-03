@@ -3,7 +3,6 @@ package com.github.mrramych.shakalbot;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import moe.orangelabs.json.JsonObject;
-import moe.orangelabs.json.exceptions.JsonCastException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,23 +40,15 @@ public class Handler {
         String in = new String(inputStream.readAllBytes());
         LOGGER.info("Input: " + in);
 
-        JsonObject input;
         try {
-            input = parse(in).getAsObject();
+            JsonObject input = parse(in).getAsObject();
 
-            if (input.containsKey("Records")) {
-                LOGGER.info("Updating history");
-
-                var body = input.get("Records").getAsArray().get(0).getAsObject().getString("body").string;
-                var message = parse(body).getAsObject();
-                var newHistoryId = message.getNumber("historyId").value;
+            if (input.containsKey("path")) {
+                var body = parse(input.getString("body").string).getAsObject();
+                JsonObject data = parse(body.getObject("message").getString("data").string).getAsObject();
+                var newHistoryId = data.getNumber("historyId").value;
 
                 new Vk().updateHistory(newHistoryId.toBigInteger());
-
-            } else if (input.containsKey("path")) {
-                LOGGER.info("Sending message to Sqs");
-
-                new Sqs().sendToSqs(input.get("body"));
 
             } else if (input.containsKey("action")) {
                 switch (input.getString("action").string) {
