@@ -129,7 +129,7 @@ public class Gmail {
         builder
                 .append("От: ").append(from).append('\n')
                 .append("Тема: ").append(subject).append('\n')
-                .append("Snippet: ").append(messageInfo.getSnippet()).append("\n\n");
+                .append("Фрагмент сообщения: ").append(messageInfo.getSnippet()).append("\n\n");
 
     }
 
