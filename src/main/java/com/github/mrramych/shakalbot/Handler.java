@@ -2,11 +2,13 @@ package com.github.mrramych.shakalbot;
 
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.google.api.client.util.Base64;
 import moe.orangelabs.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Scanner;
 
@@ -45,8 +47,9 @@ public class Handler {
 
             if (input.containsKey("path")) {
                 var body = parse(input.getString("body").string).getAsObject();
-                JsonObject data = parse(body.getObject("message").getString("data").string).getAsObject();
-                var newHistoryId = data.getNumber("historyId").value;
+                var messageData = body.getObject("message").getString("data").string;
+                var message = new String(Base64.decodeBase64(messageData), StandardCharsets.UTF_8);
+                var newHistoryId = parse(message).getAsObject().getNumber("historyId").value;
 
                 new Vk().updateHistory(newHistoryId.toBigInteger());
 
